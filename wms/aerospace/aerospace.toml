@@ -12,7 +12,7 @@ config-version = 2
 # it once the server is up (at login SketchyBar usually starts first).
 after-startup-command = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
-# SketchyBar (bar/sketchybar/items/spaces.sh): focused workspace, and the app glyphs.
+# SketchyBar (bar/sketchybar/items/spaces.lua): focused workspace, and the app glyphs.
 # There is no window-created/destroyed callback, but opening, closing or moving a window
 # changes focus, so on-focus-changed covers those.
 exec-on-workspace-change = ['/bin/bash', '-c',

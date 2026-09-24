@@ -1,31 +1,30 @@
-#!/bin/bash
+#!/usr/bin/env lua
 
-# Mirage v1 — bare bar. Nothing is drawn behind the items: glyphs and text sit straight
-# on the wallpaper in a light "sky" ink with a 1 pt shadow, and the notch stays hardware black.
-# Design: Figma "Sketchybar" → Page 1, section "05 · Mirage v1" (components on 🧱 Components).
+-- Mirage v1 — bare bar. Nothing is drawn behind the items: glyphs and text sit straight
+-- on the wallpaper in a light "sky" ink with a 1 pt shadow, and the notch stays hardware black.
+-- Design: Figma "Sketchybar" → Page 1, section "05 · Mirage v1" (components on 🧱 Components).
 
-PLUGIN_DIR="$CONFIG_DIR/plugins"
-ITEMS_DIR="$CONFIG_DIR/items"
+-- The config talks to SketchyBar through the SbarLua module (https://github.com/FelixKratz/SbarLua).
+-- It bundles its own copy of Lua (5.5.0), which has to match Homebrew's `lua`. Install it with:
+--   git clone https://github.com/FelixKratz/SbarLua /tmp/SbarLua && make -C /tmp/SbarLua install
+package.cpath = package.cpath .. ";" .. os.getenv("HOME") .. "/.local/share/sketchybar_lua/?.so"
 
-source "$CONFIG_DIR/colors.sh"
-source "$CONFIG_DIR/icons.sh"
-source "$CONFIG_DIR/bar.sh"
-source "$CONFIG_DIR/default.sh"
+-- Modules load from the config dir whatever the working directory is.
+local config_dir = os.getenv("CONFIG_DIR") or arg[0]:match("(.*)/")
+package.path = config_dir .. "/?.lua;" .. config_dir .. "/?/init.lua;" .. package.path
 
-# Left — apple · spaces · front app
-source "$ITEMS_DIR/apple.sh"
-source "$ITEMS_DIR/spaces.sh"
-source "$ITEMS_DIR/front_app.sh"
+-- SbarLua reports callback errors with printf, and stdout is a log file, so flush every line.
+io.stdout:setvbuf("line")
 
-# Right — items are added right to left, so the clock ends up at the edge
-source "$ITEMS_DIR/clock.sh"
-source "$ITEMS_DIR/weather.sh"
-source "$ITEMS_DIR/bluetooth.sh"
-source "$ITEMS_DIR/volume.sh"
-source "$ITEMS_DIR/wifi.sh"
+local sbar = require("sketchybar")
 
-# Hidden helper: reload when the macOS appearance flips between Day and Night
-source "$ITEMS_DIR/theme.sh"
+-- The whole initial config goes to SketchyBar as one message.
+sbar.begin_config()
+require("bar")
+require("default")
+require("items")
+sbar.end_config()
 
-##### Force all scripts to run the first time (never do this in a script) #####
-sketchybar --update
+-- Runs the callbacks. It starts with a forced update (SENDER=forced), which draws every
+-- item's initial state.
+sbar.event_loop()
