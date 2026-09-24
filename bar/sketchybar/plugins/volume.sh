@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source "$CONFIG_DIR/colors.sh"
 source "$CONFIG_DIR/icons.sh"
 
 NAME="${NAME:-volume}"
@@ -27,8 +26,6 @@ if [ "$1" = "toggle" ]; then
 fi
 
 case "$SENDER" in
-mouse.entered) sketchybar --set "$NAME" background.drawing=on ;;
-mouse.exited) sketchybar --set "$NAME" background.drawing=off ;;
 mouse.scrolled)
   vol=$(($(current) + SCROLL_DELTA * 2))
   [ "$vol" -lt 0 ] && vol=0

@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+
+# yabai: tiling window manager (macOS). Hotkeys live in wms/skhd/skhdrc.
+# Linked as ~/.config/yabai -> wms/yabai. Reload with `yabai --restart-service`.
+#
+# SIP is enabled on this machine, so the scripting addition is not loaded. Without it,
+# space focus/create/move and window --space don't work; skhd falls back to native ⌃N.
+# After partially disabling SIP and adding the sudoers entry, uncomment these two lines:
+# yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+# sudo yabai --load-sa
+
+# Layout (AeroSpace defaults: tiles, auto orientation, no gaps)
+yabai -m config layout                bsp
+yabai -m config split_type            auto
+yabai -m config window_placement      second_child
+yabai -m config auto_balance          off
+yabai -m config top_padding           0
+yabai -m config bottom_padding        0
+yabai -m config left_padding          0
+yabai -m config right_padding         0
+yabai -m config window_gap            0
+
+# Mouse: alt + left drag moves, alt + right drag resizes, drop on a window swaps
+yabai -m config mouse_modifier        alt
+yabai -m config mouse_action1         move
+yabai -m config mouse_action2         resize
+yabai -m config mouse_drop_action     swap
+yabai -m config focus_follows_mouse   off
+yabai -m config mouse_follows_focus   off
+
+# Don't tile system panels and small utility windows
+yabai -m rule --add app="^System Settings$" manage=off
+yabai -m rule --add app="^System Information$" manage=off
+yabai -m rule --add app="^Calculator$" manage=off
+yabai -m rule --add app="^Archive Utility$" manage=off
+yabai -m rule --add app="^Finder$" title="(Copy|Move|Info|Connect)" manage=off
+yabai -m rule --add app="^Raycast$" manage=off
+yabai -m rule --add app="^(Garmin Express|Shortcuts)$" manage=off
+
+# SketchyBar: refresh the Space glyphs when windows come, go, move or (de)minimize
+# (bar/sketchybar/items/spaces.sh listens for the custom windows_on_spaces event)
+for ev in window_created window_destroyed window_moved window_minimized window_deminimized; do
+  yabai -m signal --add event="$ev" label="sketchybar_$ev" action="/opt/homebrew/bin/sketchybar --trigger windows_on_spaces"
+done
+
+echo "yabai configuration loaded"

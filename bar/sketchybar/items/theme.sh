@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##### Theme watcher (hidden) #####
-# macOS posts AppleInterfaceThemeChangedNotification when appearance flips; reloading
+# macOS posts AppleInterfaceThemeChangedNotification when the appearance flips; reloading
 # re-runs colors.sh, which picks the Day or Night palette.
 
 sketchybar --add event theme_change AppleInterfaceThemeChangedNotification \

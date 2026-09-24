@@ -3,17 +3,7 @@
 source "$CONFIG_DIR/colors.sh"
 source "$CONFIG_DIR/plugins/icon_map.sh"
 
-STATE="${TMPDIR:-/tmp}/sketchybar_focused_space"
-
-# Native Spaces click: needs "Switch to Desktop N" (⌃N) enabled in
-# System Settings → Keyboard → Keyboard Shortcuts → Mission Control.
-if [ "$1" = "focus" ]; then
-  codes=(0 18 19 20 21 23 22 26 28 25 29)
-  osascript -e "tell application \"System Events\" to key code ${codes[$2]} using control down"
-  exit 0
-fi
-
-# App names on stdin → space-separated sketchybar-app-font ligatures.
+# App names (one per line) → space-separated sketchybar-app-font ligatures.
 app_icons() {
   local out="" app
   while IFS= read -r app; do
@@ -22,58 +12,37 @@ app_icons() {
   echo "${out# }"
 }
 
-render_aerospace() {
-  local focused nonempty ws icons args=()
-  focused="${FOCUSED_WORKSPACE:-$(aerospace list-workspaces --focused)}"
-  echo "$focused" >"$STATE"
-  nonempty="$(aerospace list-workspaces --monitor all --empty no)"
-  for ws in $(aerospace list-workspaces --all); do
-    if [ "$ws" = "$focused" ] || printf '%s\n' "$nonempty" | grep -qx "$ws"; then
-      icons="$(aerospace list-windows --workspace "$ws" --format '%{app-name}' 2>/dev/null | sort -u | app_icons)"
-      args+=(--set "space.$ws" drawing=on label="$icons")
-      if [ "$ws" = "$focused" ]; then
-        args+=(background.drawing=on background.color="$ACCENT" icon.color="$ON_ACCENT" label.color="$ON_ACCENT")
-        if [ -n "$icons" ]; then args+=(label.drawing=on); else args+=(label.drawing=off); fi
-      else
-        args+=(background.drawing=off icon.color="$TEXT_MUTED" label.color="$TEXT" label.drawing=off)
-      fi
-    else
-      args+=(--set "space.$ws" drawing=off)
-    fi
-  done
-  sketchybar --animate tanh 10 "${args[@]}"
+# Append the properties for one workspace to ARGS (one sketchybar call sets everything).
+# Drawn when it has apps or is focused; focused = ink + underline, otherwise dimmed.
+ARGS=()
+add_props() { # add_props <ws> <icons> <true|false>
+  local ws="$1" icons="$2" on="$3"
+  ARGS+=(--set "space.$ws")
+  if [ -n "$icons" ]; then ARGS+=(label="$icons" label.drawing=on icon.padding_right=4)
+  else ARGS+=(label="" label.drawing=off icon.padding_right=0); fi
+  if [ "$on" = true ]; then ARGS+=(icon.color="$INK" label.color="$INK" background.drawing=on drawing=on)
+  elif [ -n "$icons" ]; then ARGS+=(icon.color="$INK_DIM" label.color="$INK_DIM" background.drawing=off drawing=on)
+  else ARGS+=(icon.color="$INK_DIM" label.color="$INK_DIM" background.drawing=off drawing=off); fi
 }
 
-is_focused() { [ "${NAME#space.}" = "$(cat "$STATE" 2>/dev/null)" ]; }
-has_icons() { [ -n "$(sketchybar --query "$NAME" | jq -r '.label.value')" ] && echo on || echo off; }
+# Rebuild every workspace from AeroSpace: one list-windows call for all of them.
+render() {
+  command -v aerospace >/dev/null 2>&1 || return 0
+  local focused windows map ws rest icons
+  focused="${FOCUSED_WORKSPACE:-$(aerospace list-workspaces --focused 2>/dev/null)}"
+  windows="$(aerospace list-windows --all --format '%{workspace}%{tab}%{app-name}' 2>/dev/null)" || return 0
+  # "<ws>\t<app>\t<app>…" per line (bash 3.2 has no associative arrays; names can be letters)
+  map=$'\n'"$(printf '%s\n' "$windows" | sort -u | awk -F'\t' 'NF == 2 { a[$1] = a[$1] "\t" $2 } END { for (w in a) print w a[w] }')"$'\n'
+  ARGS=()
+  for ws in $(sketchybar --query bar | jq -r '.items[] | select(startswith("space.")) | sub("^space\\."; "")'); do
+    icons=""
+    case "$map" in *$'\n'"$ws"$'\t'*)
+      rest="${map#*$'\n'"$ws"$'\t'}"
+      icons="$(printf '%s\n' "${rest%%$'\n'*}" | tr '\t' '\n' | app_icons)" ;;
+    esac
+    if [ "$ws" = "$focused" ]; then add_props "$ws" "$icons" true; else add_props "$ws" "$icons" false; fi
+  done
+  [ ${#ARGS[@]} -gt 0 ] && sketchybar "${ARGS[@]}"
+}
 
-case "$SENDER" in
-mouse.entered)
-  is_focused || sketchybar --animate tanh 8 --set "$NAME" background.drawing=on background.color="$PEBBLE_HOVER" \
-    label.drawing="$(has_icons)"
-  ;;
-mouse.exited) is_focused || sketchybar --set "$NAME" background.drawing=off label.drawing=off ;;
-aerospace_workspace_change | front_app_switched | system_woke) render_aerospace ;;
-space_windows_change)
-  sid="$(echo "$INFO" | jq -r '.space')"
-  [ "$sid" -ge 1 ] 2>/dev/null && [ "$sid" -le 20 ] || exit 0
-  icons="$(echo "$INFO" | jq -r '.apps | keys[]' | app_icons)"
-  if [ "$sid" = "$(cat "$STATE" 2>/dev/null)" ] && [ -n "$icons" ]; then
-    sketchybar --set "space.$sid" label="$icons" label.drawing=on
-  else
-    sketchybar --set "space.$sid" label="$icons" label.drawing=off
-  fi
-  ;;
-*)
-  if [ "$NAME" = "spaces.ctl" ]; then
-    aerospace list-workspaces --focused >/dev/null 2>&1 && render_aerospace
-  elif [ "$SELECTED" = "true" ]; then # native space became active
-    echo "${NAME#space.}" >"$STATE"
-    sketchybar --animate tanh 10 --set "$NAME" background.drawing=on background.color="$ACCENT" \
-      icon.color="$ON_ACCENT" label.color="$ON_ACCENT" label.drawing="$(has_icons)"
-  elif [ "$SELECTED" = "false" ]; then
-    sketchybar --animate tanh 10 --set "$NAME" background.drawing=off icon.color="$TEXT_MUTED" label.color="$TEXT" \
-      label.drawing=off
-  fi
-  ;;
-esac
+render

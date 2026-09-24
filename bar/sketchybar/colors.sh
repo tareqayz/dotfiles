@@ -1,45 +1,39 @@
 #!/bin/bash
 
-# Dune palette. Values mirror the "Desert" variables in Figma (modes Day / Night).
-# The bar follows the macOS appearance; items/theme.sh reloads on a change.
+# Mirage v1 palette = the "sky/*" variables in Figma (Desert collection, modes Day / Night).
+# Day or Night follows the macOS appearance; items/theme.sh reloads the bar when it flips.
+# ARGB hex, alpha first: 0xb8 = 72 %, 0xcc = 80 %, 0x8c = 55 %, 0x80 = 50 %, 0x4d = 30 %,
+# 0x38 = 22 %, 0x24 = 14 %, 0x1a = 10 %.
 
 if [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
   export THEME=night
-  export PEBBLE=0xff232c42
-  export PEBBLE_HOVER=0xff2f3a55
-  export PEBBLE_BORDER=0x24eadcc2
-  export TEXT=0xffefe3cb
-  export TEXT_MUTED=0xff8e97ae
-  export ACCENT=0xffe89a58
-  export ON_ACCENT=0xff1b2030
-  export POPUP=0xf7182033
-  export POPUP_BORDER=0xff303b57
-  export DIVIDER=0xff29334b
-  export ROW_HOVER=0xff222b41
-  export SUN=0xfff29a60
-  export OASIS=0xff5cd3be
+  export INK=0xffe8ecf8          # sky/fg
+  export INK_MUTED=0xb8e8ecf8    # sky/fg-muted
+  export INK_DIM=0x99e8ecf8      # sky/fg-dim — idle spaces
+  export SHADOW=0x8c000000       # sky/shadow
+  export GLOW=0xffb0c4f4         # sky/glow — weather glyph
+  export TRACK=0x4de8ecf8        # sky/track
+  export PANEL=0xcc10162a        # sky/panel — popup background
+  export PANEL_FG=0xffe4e8f4     # sky/panel-fg
+  export PANEL_MUTED=0xff9ca6c6  # sky/panel-muted
+  export ACCENT=0xffa4b8e8       # sky/accent
+  export ACCENT_SOFT=0x38a4b8e8  # sky/accent-soft — popup row hover
+  export LINE=0x1affffff         # sky/line — popup border
 else
   export THEME=day
-  export PEBBLE=0xffe8d5b0
-  export PEBBLE_HOVER=0xffddc59b
-  export PEBBLE_BORDER=0x8cffffff
-  export TEXT=0xff3a2616
-  export TEXT_MUTED=0xff7a604a
-  export ACCENT=0xffb9582f
-  export ON_ACCENT=0xfffff6e8
-  export POPUP=0xf7fbf3e4
-  export POPUP_BORDER=0xffe0cba4
-  export DIVIDER=0xffeadbbf
-  export ROW_HOVER=0xfff0e3c9
-  export SUN=0xffee8b4e
-  export OASIS=0xff52c7b2
+  export INK=0xffffffff
+  export INK_MUTED=0xb8ffffff
+  export INK_DIM=0x99ffffff
+  export SHADOW=0x8014285a
+  export GLOW=0xffface82
+  export TRACK=0x4dffffff
+  export PANEL=0xccfff7e8
+  export PANEL_FG=0xff382612
+  export PANEL_MUTED=0xff705638
+  export ACCENT=0xff925820
+  export ACCENT_SOFT=0x38925820
+  export LINE=0x245a3c1e
 fi
 
-# The notch island is hardware black in both modes.
-export ISLAND=0xff000000
-export ISLAND_TEXT=0xfff3e7d0
-export ISLAND_MUTED=0xff9c9080
-export ISLAND_TRACK=0xff2b2723
-export ISLAND_HOVER=0xff1e1b18
-
+export NOTCH=0xff000000
 export TRANSPARENT=0x00000000

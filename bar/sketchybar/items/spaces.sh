@@ -1,52 +1,47 @@
 #!/bin/bash
 
-##### Workspaces pebble #####
-# AeroSpace workspaces when AeroSpace is running (it triggers aerospace_workspace_change,
-# see ~/.aerospace.toml), otherwise native macOS Spaces. Each pill shows the workspace
-# number; the focused pill (and any pill you hover) also shows its apps as icons.
+##### Spaces — AeroSpace workspaces #####
+# One item per workspace: its name (mono) + the apps open in it (app glyphs).
+# Only workspaces that have windows, plus the focused one, are drawn. The focused one is
+# full ink with a 2 pt glow underline 3 pt above the bottom; the others are dimmed.
+# Figma: "Mirage v1/Space". AeroSpace workspaces are not native Spaces, so these are plain
+# items fed by the triggers in wms/aerospace/aerospace.toml, not `space` components.
 
 space=(
-  icon.font="$FONT:Heavy:11.5"
-  icon.padding_left=4
-  icon.padding_right=4
-  icon.color="$TEXT_MUTED"
+  drawing=off
+  padding_left=0
+  padding_right=13
+  icon.font="$MONO_FONT"
+  icon.color="$INK_DIM"
+  icon.padding_right=0
   label.font="$APP_FONT"
-  label.padding_right=7
+  label.color="$INK_DIM"
   label.y_offset=-1
-  label.color="$TEXT"
   label.drawing=off
-  background.color="$ACCENT"
-  background.height=20
-  background.corner_radius=10
+  background.color="$GLOW"
+  background.height=2
+  background.corner_radius=1
+  background.y_offset=-12
   background.drawing=off
-  padding_left=1
-  padding_right=1
-  script="$PLUGIN_DIR/spaces.sh"
 )
 
-if aerospace list-workspaces --focused >/dev/null 2>&1; then
-  sketchybar --add event aerospace_workspace_change
-  for ws in $(aerospace list-workspaces --all); do
-    sketchybar --add item "space.$ws" left \
-      --set "space.$ws" "${space[@]}" icon="$ws" drawing=off \
-      click_script="aerospace workspace $ws" \
-      --subscribe "space.$ws" mouse.entered mouse.exited
-  done
-  events="aerospace_workspace_change front_app_switched system_woke"
-else
-  for sid in $(seq 1 20); do
-    sketchybar --add space "space.$sid" left \
-      --set "space.$sid" space="$sid" "${space[@]}" icon="$sid" \
-      click_script="$PLUGIN_DIR/spaces.sh focus $sid" \
-      --subscribe "space.$sid" mouse.entered mouse.exited
-  done
-  events="space_windows_change"
-fi
+# Workspaces come from the AeroSpace server; if it isn't up yet, fall back to 1–9
+# (aerospace.toml reloads the bar after startup).
+workspaces="$(aerospace list-workspaces --all 2>/dev/null)"
+[ -n "$workspaces" ] || workspaces="$(seq 1 9)"
 
-# Invisible controller: one script run per event updates every pill in one batch.
-sketchybar --add item spaces.ctl left \
+for ws in $workspaces; do
+  sketchybar --add item "space.$ws" left \
+    --set "space.$ws" "${space[@]}" icon="$ws" \
+      click_script="aerospace workspace $ws"
+done
+
+# Hidden controller: re-renders every workspace in one batch. aerospace_workspace_change
+# (focus moved, carries $FOCUSED_WORKSPACE) and aerospace_windows_change (window focus
+# changed: opened, closed, moved) are triggered by AeroSpace.
+sketchybar --add event aerospace_workspace_change \
+  --add event aerospace_windows_change \
+  --add item spaces.ctl left \
   --set spaces.ctl drawing=off updates=on script="$PLUGIN_DIR/spaces.sh" \
-  --subscribe spaces.ctl $events
-
-sketchybar --add bracket spaces '/space\..*/' \
-  --set spaces "${pebble[@]}"
+  --subscribe spaces.ctl aerospace_workspace_change aerospace_windows_change \
+    front_app_switched system_woke

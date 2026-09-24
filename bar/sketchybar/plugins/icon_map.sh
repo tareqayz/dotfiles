@@ -80,6 +80,7 @@ icon_map() {
   "System Settings" | "System Preferences") echo ":gear:" ;;
   "TestFlight") echo ":testflight:" ;;
   "Minecraft") echo ":minecraft:" ;;
+  "Calculator") echo ":calculator:" ;;
   *) echo ":default:" ;;
   esac
 }

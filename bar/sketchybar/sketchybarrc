@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Dune v2 — transparent bar, notch island, one "Suites" launcher.
-# Design: Figma "Sketchybar" → section "04 · Dune v2" (Suites option B, island v1).
+# Mirage v1 — bare bar. Nothing is drawn behind the items: glyphs and text sit straight
+# on the wallpaper in a light "sky" ink with a 1 pt shadow, and the notch stays hardware black.
+# Design: Figma "Sketchybar" → Page 1, section "05 · Mirage v1" (components on 🧱 Components).
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 ITEMS_DIR="$CONFIG_DIR/items"
@@ -11,18 +12,19 @@ source "$CONFIG_DIR/icons.sh"
 source "$CONFIG_DIR/bar.sh"
 source "$CONFIG_DIR/default.sh"
 
-# Left
+# Left — apple · spaces · front app
 source "$ITEMS_DIR/apple.sh"
 source "$ITEMS_DIR/spaces.sh"
+source "$ITEMS_DIR/front_app.sh"
 
-# Notch island (music · Garmin)
-source "$ITEMS_DIR/island.sh"
-
-# Right — added right to left
-source "$ITEMS_DIR/sky.sh"
+# Right — items are added right to left, so the clock ends up at the edge
 source "$ITEMS_DIR/clock.sh"
-source "$ITEMS_DIR/status.sh"
-source "$ITEMS_DIR/suites.sh"
+source "$ITEMS_DIR/weather.sh"
+source "$ITEMS_DIR/bluetooth.sh"
+source "$ITEMS_DIR/volume.sh"
+source "$ITEMS_DIR/wifi.sh"
+
+# Hidden helper: reload when the macOS appearance flips between Day and Night
 source "$ITEMS_DIR/theme.sh"
 
 ##### Force all scripts to run the first time (never do this in a script) #####

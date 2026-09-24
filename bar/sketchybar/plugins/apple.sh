@@ -2,7 +2,7 @@
 
 source "$CONFIG_DIR/colors.sh"
 
-close() { sketchybar --set apple popup.drawing=off background.color="$PEBBLE" icon.color="$TEXT"; }
+close() { sketchybar --set apple popup.drawing=off icon.color="$INK"; }
 is_open() { [ "$(sketchybar --query apple | jq -r '.popup.drawing')" = "on" ]; }
 
 # Row actions (click_script passes the action name).
@@ -18,9 +18,7 @@ esac
 case "$SENDER" in
 mouse.clicked)
   if is_open; then close
-  else sketchybar --set apple popup.drawing=on background.color="$ACCENT" icon.color="$ON_ACCENT"
+  else sketchybar --set apple popup.drawing=on icon.color="$GLOW"
   fi ;;
-mouse.entered) is_open || sketchybar --set apple background.color="$PEBBLE_HOVER" ;;
-mouse.exited) is_open || sketchybar --set apple background.color="$PEBBLE" ;;
 mouse.exited.global) close ;;
 esac

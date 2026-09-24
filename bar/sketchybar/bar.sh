@@ -1,9 +1,8 @@
 #!/bin/bash
 
 ##### Bar Appearance #####
-# Dune v2: no bar background. Every group is its own "pebble" (bracket), and the
-# notch becomes a black island. Height matches the MacBook Pro 14" notch (32 pt).
-# notch_width is the measured notch (185 pt), so position q / e items hug it exactly.
+# Mirage v1: no background at all. Height matches the MacBook Pro 14" notch (32 pt), items
+# start 14 pt from each edge, and notch_width keeps center items clear of the hardware notch.
 
 bar=(
   position=top
@@ -14,8 +13,8 @@ bar=(
   margin=0
   y_offset=0
   blur_radius=0
-  padding_left=8
-  padding_right=8
+  padding_left=14
+  padding_right=14
   notch_width=185
   notch_display_height=0
   notch_offset=0

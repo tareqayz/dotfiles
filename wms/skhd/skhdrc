@@ -1,0 +1,64 @@
+# skhd: hotkeys for yabai (wms/yabai/yabairc). Ported from ~/.aerospace.toml.
+# Linked as ~/.config/skhd -> wms/skhd. skhd reloads this file on save.
+#
+# Space focus falls back to macOS "Switch to Desktop N" (⌃N) because the yabai
+# scripting addition isn't loaded (SIP on). Bindings marked [SA] need it.
+
+# Layout: toggle split direction (alt-/) and bsp <-> stack (alt-, ~ AeroSpace accordion)
+alt - 0x2C : yabai -m window --toggle split
+alt - 0x2B : yabai -m space --layout "$([ "$(yabai -m query --spaces --space | jq -r .type)" = bsp ] && echo stack || echo bsp)"
+
+# Focus (in a stack, j/k cycle the stack)
+alt - h : yabai -m window --focus west  || yabai -m display --focus west
+alt - j : yabai -m window --focus south || yabai -m window --focus stack.next
+alt - k : yabai -m window --focus north || yabai -m window --focus stack.prev
+alt - l : yabai -m window --focus east  || yabai -m display --focus east
+
+# Move (swap with the neighbour, or send to the next display)
+shift + alt - h : yabai -m window --swap west  || yabai -m window --display west
+shift + alt - j : yabai -m window --swap south
+shift + alt - k : yabai -m window --swap north
+shift + alt - l : yabai -m window --swap east  || yabai -m window --display east
+
+# Resize: grow/shrink by 50 pt, whichever edge can move
+alt - 0x18 : yabai -m window --resize right:50:0 || yabai -m window --resize left:-50:0
+alt - 0x1B : yabai -m window --resize right:-50:0 || yabai -m window --resize left:50:0
+
+# Spaces 1-9: yabai if the scripting addition is loaded, else native ⌃N
+alt - 1 : yabai -m space --focus 1 2>/dev/null || skhd -k "ctrl - 1"
+alt - 2 : yabai -m space --focus 2 2>/dev/null || skhd -k "ctrl - 2"
+alt - 3 : yabai -m space --focus 3 2>/dev/null || skhd -k "ctrl - 3"
+alt - 4 : yabai -m space --focus 4 2>/dev/null || skhd -k "ctrl - 4"
+alt - 5 : yabai -m space --focus 5 2>/dev/null || skhd -k "ctrl - 5"
+alt - 6 : yabai -m space --focus 6 2>/dev/null || skhd -k "ctrl - 6"
+alt - 7 : yabai -m space --focus 7 2>/dev/null || skhd -k "ctrl - 7"
+alt - 8 : yabai -m space --focus 8 2>/dev/null || skhd -k "ctrl - 8"
+alt - 9 : yabai -m space --focus 9 2>/dev/null || skhd -k "ctrl - 9"
+
+# [SA] Send window to space N
+shift + alt - 1 : yabai -m window --space 1
+shift + alt - 2 : yabai -m window --space 2
+shift + alt - 3 : yabai -m window --space 3
+shift + alt - 4 : yabai -m window --space 4
+shift + alt - 5 : yabai -m window --space 5
+shift + alt - 6 : yabai -m window --space 6
+shift + alt - 7 : yabai -m window --space 7
+shift + alt - 8 : yabai -m window --space 8
+shift + alt - 9 : yabai -m window --space 9
+
+# [SA] Last space; move this space to the next display
+alt - tab : yabai -m space --focus recent
+shift + alt - tab : yabai -m space --display next || yabai -m space --display first
+
+# Service mode (alt-shift-;), like AeroSpace's
+:: service @
+shift + alt - 0x29 ; service
+service < escape ; default
+service < c : yabai --restart-service; skhd -k "escape"
+service < r : yabai -m space --balance; skhd -k "escape"
+service < f : yabai -m window --toggle float --grid 6:6:1:1:4:4; skhd -k "escape"
+service < backspace : for id in $(yabai -m query --windows --space | jq '.[] | select(."has-focus" | not) | .id'); do yabai -m window "$id" --close; done; skhd -k "escape"
+service < shift + alt - h : yabai -m window --warp west;  skhd -k "escape"
+service < shift + alt - j : yabai -m window --warp south; skhd -k "escape"
+service < shift + alt - k : yabai -m window --warp north; skhd -k "escape"
+service < shift + alt - l : yabai -m window --warp east;  skhd -k "escape"
