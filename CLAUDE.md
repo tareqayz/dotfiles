@@ -22,17 +22,28 @@ Everything else (`wms/hypr`, `wms/i3`, `etc/ly`, `terminals/kitty`, `shells/bash
 
 ## SketchyBar (`bar/sketchybar/`)
 
-This is where most of the active work happens. `sketchybarrc` is the entry point. SketchyBar runs it with `$CONFIG_DIR` set to the config directory. It defines `PLUGIN_DIR`/`ITEMS_DIR`, then `source`s:
-1. `bar.sh`: global `--bar` properties
-2. `default.sh`: `--default` item properties (Hack Nerd Font, white icons and labels)
-3. `items/*.sh`: one file per bar item, each doing `sketchybar --add item … --set …`. To add an item, create `items/<name>.sh` and add a `source` line to `sketchybarrc`. Items are sourced, not executed, so they share its variables. `items/items.sh` is an unused stub.
-4. A final `sketchybar --update`
+This is where most of the active work happens. The current design is "Dune v2": a transparent bar, a black notch island, and one Suites launcher. It comes from the Figma file "Sketchybar", section "04 · Dune v2". `sketchybarrc` is the entry point. SketchyBar runs it with `$CONFIG_DIR` set to the config directory. It defines `PLUGIN_DIR`/`ITEMS_DIR`, then `source`s:
+1. `colors.sh`: the Day or Night palette, picked from the macOS appearance. `items/theme.sh` reloads the bar when the appearance changes.
+2. `icons.sh`: SF Symbol glyphs as `ICON_*` variables. They are private-use codepoints, so they look blank in most editors; each has its codepoint in a comment.
+3. `bar.sh`: global `--bar` properties.
+4. `default.sh`: `--default` item properties, fonts (SF Pro Rounded labels, SF Pro symbols, `sketchybar-app-font` app ligatures), the `pebble` style array and the `popup_row` helper.
+5. `items/*.sh`: one file per bar item. Items are sourced, not executed, so they share its variables. To add one, create `items/<name>.sh` and add a `source` line. Right-side items are added right to left. `items/items.sh` is an unused stub.
+6. A final `sketchybar --update`.
 
-`plugins/*.sh` are the scripts items run through `script=`/`click_script=` (event handlers, toggles). They run as separate processes and get `$NAME`, `$SELECTED` and so on from SketchyBar. Several plugins (clock, volume, battery, front_app) are only referenced from commented-out blocks in `sketchybarrc`.
+`plugins/*.sh` are the scripts items run through `script=`/`click_script=`. They run as separate processes, get `$NAME`, `$SENDER`, `$CONFIG_DIR` and so on from SketchyBar, and `source` `colors.sh`/`icons.sh` themselves (`$PLUGIN_DIR` is not set there).
 
-Icons come from three fonts: SF Symbols glyphs (`SF Pro`/`SF Pro Rounded`, private-use codepoints that may render as blanks), Hack Nerd Font, and `sketchybar-app-font` (`:app_name:` ligatures). Space items call `yabai -m space --focus`.
+- **Island** (`items/island.sh`): a music wing (position `q`), the notch (`center`, width 185) and a Garmin wing (`e`) under one black bracket. `plugins/island.sh` is the hover/click state machine. Its state lives in `$TMPDIR/sketchybar_island`, and the item file resets it on every reload. `plugins/music.sh` reads Music/Spotify over AppleScript when their distributed notifications fire. Reading never launches a player, but the ⏯ control starts Music when nothing is running. `plugins/eq.sh` animates the equalizer, but it isn't audio-reactive. `plugins/garmin.sh` is a placeholder that reads `~/.cache/sketchybar/garmin.json`.
+- **Suites** (`items/suites.sh`): one launcher with paged popups. Each suite is a list of `label|glyph|app|sf|action` rows. Focus modes run a Shortcut with the mode's name.
+- **Spaces** (`items/spaces.sh`): AeroSpace workspaces when AeroSpace is running (it needs an `exec-on-workspace-change` hook that triggers `aerospace_workspace_change`), otherwise native Spaces. Clicking a native space sends ⌃N. yabai is no longer used.
 
-To apply changes, run `sketchybar --reload`. To see errors, stop the brew service and run `sketchybar` in the foreground. `bar/sketchybar/README.md` is a local copy of the upstream SketchyBar config docs (properties, events, components). Use it as the reference instead of fetching the docs online. `TODO.md` lists ideas for future items.
+Layout gotchas (SketchyBar 2.23, all found by measuring):
+- `q` items stack outward from the notch in the order they are added, so the first added sits next to the notch. `e` works the same way on the right.
+- An item or text with a fixed `width=` ignores its padding when the next item is placed. Padding only shifts where it is drawn. Use text widths, or put gaps inside the item.
+- Item `padding_*` is not part of an item's mouse area. Gaps there count as "outside" for `mouse.entered`/`exited`.
+- Every popup row is its own window, so nothing can overhang a row. A row's height grows with its item `background.height`, but not with a text background.
+- Images: scale 1.0 draws 1 px as 1 pt. `app.<bundle-id>` icons draw at about 32 pt, so scale 1.75 gives about 56 pt.
+
+To apply changes, run `sketchybar --reload`. Errors go to `/opt/homebrew/var/log/sketchybar/sketchybar.err.log`. The bar sits behind fullscreen apps (`topmost=off`). To screenshot it, raise it with `sketchybar --bar topmost=on show_in_fullscreen=on`, then run `sketchybar --reload` afterwards. `bar/sketchybar/README.md` is a local copy of the upstream SketchyBar config docs (properties, events, components). Use it as the reference instead of fetching the docs online. `TODO.md` lists ideas for future items.
 
 ## Skill routing
 

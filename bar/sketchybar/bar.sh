@@ -1,25 +1,23 @@
 #!/bin/bash
+
 ##### Bar Appearance #####
-# Configuring the general appearance of the bar.
-# These are only some of the options available. For all options see:
-# https://felixkratz.github.io/SketchyBar/config/bar
-# If you are looking for other colors, see the color picker:
-# https://felixkratz.github.io/SketchyBar/config/tricks#color-picker
+# Dune v2: no bar background. Every group is its own "pebble" (bracket), and the
+# notch becomes a black island. Height matches the MacBook Pro 14" notch (32 pt).
+# notch_width is the measured notch (185 pt), so position q / e items hug it exactly.
 
 bar=(
-  color=0x40000000
-  border_color=0xffff0000
   position=top
-  height=40
-  notch_display_height=0
+  height=32
+  color="$TRANSPARENT"
+  border_width=0
+  corner_radius=0
   margin=0
   y_offset=0
-  corner_radius=0
-  border_width=0
-  blur_radius=10
-  padding_left=0
-  padding_right=0
-  notch_width=200
+  blur_radius=0
+  padding_left=8
+  padding_right=8
+  notch_width=185
+  notch_display_height=0
   notch_offset=0
   display=all
   hidden=off
