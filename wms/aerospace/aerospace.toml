@@ -77,13 +77,18 @@ on-mode-changed = []
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See:
 #                 https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+#
+# 10 pt all round: the common MacBook Pro go-to. On the built-in display macOS already keeps
+# the 32 pt notch strip out of the usable area (and SketchyBar is 32 pt tall), so the top
+# only needs the normal gap. External monitors have no notch, so their top gap is the
+# 32 pt bar plus 10.
 [gaps]
-    inner.horizontal = 0
-    inner.vertical =   0
-    outer.left =       0
-    outer.bottom =     0
-    outer.top =        0
-    outer.right =      0
+    inner.horizontal = 10
+    inner.vertical =   10
+    outer.left =       10
+    outer.bottom =     10
+    outer.top =        [{ monitor.built-in = 10 }, 42]
+    outer.right =      10
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -117,6 +122,19 @@ on-mode-changed = []
     #     activate
     # end tell'
     # '''
+
+    # Launch or focus favorite apps. `open -a` focuses the app if it is already running,
+    # and AeroSpace follows it to its workspace. ctrl-alt keeps these clear of the
+    # alt (workspace) and alt-shift (move) bindings.
+    alt-enter  = 'exec-and-forget open -a Ghostty'
+    ctrl-alt-t = 'exec-and-forget open -a Ghostty'
+    ctrl-alt-b = 'exec-and-forget open -a Zen'
+    ctrl-alt-c = 'exec-and-forget open -a "Visual Studio Code"'
+    ctrl-alt-o = 'exec-and-forget open -a Obsidian'
+    ctrl-alt-a = 'exec-and-forget open -a Claude'
+    ctrl-alt-f = 'exec-and-forget open -a Figma'
+    ctrl-alt-d = 'exec-and-forget open -a Discord'
+    ctrl-alt-m = 'exec-and-forget open -a "Proton Mail"'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
