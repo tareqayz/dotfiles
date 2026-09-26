@@ -6,7 +6,7 @@ local settings = require("settings")
 local volume = sbar.add("item", "volume", {
   position = "right",
   padding_left = settings.right_gap,
-  icon = icons.volume_100,
+  icon = { string = icons.volume_100, width = 22 },
   label = { drawing = false },
 })
 
